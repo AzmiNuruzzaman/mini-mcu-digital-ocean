@@ -1,0 +1,146 @@
+{% extends "nurse/nurse_index.html" %}
+{% load static %}
+
+{% comment %} title handled by nurse_index {% endcomment %}
+
+{% block page_content %}
+<!-- Removed duplicate page title header -->
+
+<div class="bg-white border border-gray-200 rounded-md shadow-sm">
+  <!-- Folder-style submenu header (green active) -->
+  <div class="flex gap-2 px-3 pt-3 border-b border-gray-200">
+    {% with is_active=request.GET.submenu|default:'upload_checkup' %}
+    {# Removed Upload Master tab for nurse #}
+
+    <a href="?submenu=upload_checkup" class="
+      px-3 py-1.5 text-sm font-medium rounded-t-md border border-b-0
+      {% if is_active == 'upload_checkup' %} bg-green-600 text-white border-green-600 {% else %} bg-white text-gray-700 hover:bg-gray-50 border-gray-300 {% endif %}
+      focus:outline-none focus:ring-2 focus:ring-green-500
+    ">Upload Checkup</a>
+
+    <a href="?submenu=upload_rekomendasi" class="
+      px-3 py-1.5 text-sm font-medium rounded-t-md border border-b-0
+      {% if is_active == 'upload_rekomendasi' %} bg-green-600 text-white border-green-600 {% else %} bg-white text-gray-700 hover:bg-gray-50 border-gray-300 {% endif %}
+      focus:outline-none focus:ring-2 focus:ring-green-500
+    ">Upload Rekomendasi</a>
+
+    <a href="?submenu=export_data" class="
+      px-3 py-1.5 text-sm font-medium rounded-t-md border border-b-0
+      {% if is_active == 'export_data' %} bg-green-600 text-white border-green-600 {% else %} bg-white text-gray-700 hover:bg-gray-50 border-gray-300 {% endif %}
+      focus:outline-none focus:ring-2 focus:ring-green-500
+    ">Export Data</a>
+    {% endwith %}
+  </div>
+
+  <!-- Panel content area -->
+  <div class="px-4 py-4">
+    {% with is_active=request.GET.submenu|default:'upload_checkup' %}
+      {% if is_active == 'upload_checkup' %}
+        <!-- Upload Medical Checkup -->
+        <section>
+          <h3 class="text-lg font-semibold mb-4">Upload Medical Checkup Data</h3>
+          <div class="bg-gray-50 p-6 rounded-lg">
+            <form id="nurse-checkup-form" method="POST" action="{% url 'nurse:upload_checkup' %}" enctype="multipart/form-data" class="space-y-4">
+              {% csrf_token %}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Excel File</label>
+                <input id="nurse-checkup-file" type="file" name="file" accept=".xls,.xlsx" class="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100">
+              </div>
+              <div class="flex items-center space-x-4">
+                <button id="nurse-upload-btn" type="button" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  Upload Checkup Data
+                </button>
+                <a href="{% url 'nurse:download_checkup_template' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                  📥 Download Template
+                </a>
+              </div>
+            </form>
+          </div>
+        </section>
+      {% elif is_active == 'upload_rekomendasi' %}
+        <section>
+          <h3 class="text-lg font-semibold mb-4">Upload Rekomendasi Kesehatan</h3>
+          <div class="bg-gray-50 p-6 rounded-lg">
+            <p class="text-xs text-gray-600 mb-2">Format: tiap sheet mewakili parameter, nama sheet = nama parameter.</p>
+            <form id="nurse-rekomendasi-form" method="POST" action="{% url 'nurse:upload_rekomendasi_xls' %}" enctype="multipart/form-data" class="space-y-4">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'nurse:upload_checkup' %}?submenu=upload_rekomendasi">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Excel File</label>
+                <input id="nurse-rekomendasi-file" type="file" name="file" accept=".xls,.xlsx" class="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100">
+              </div>
+              <button id="nurse-rekomendasi-upload-btn" type="button" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Upload Rekomendasi
+              </button>
+              <a href="{% url 'nurse:download_rekomendasi_template' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors inline-block ml-2">
+                📥 Download Template
+              </a>
+            </form>
+          </div>
+        </section>
+      {% elif is_active == 'export_data' %}
+        <!-- Export Data -->
+        <section>
+          <h3 class="text-lg font-semibold mb-4">Export Data</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <div class="text-xs text-gray-600 mb-2">download semua data checkup (sesuai dashboard)</div>
+              <div class="flex gap-2">
+                <a href="{% url 'nurse:export_checkup_data' %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                  Export XLS
+                </a>
+                <a href="{% url 'nurse:export_checkup_pdf' %}" class="inline-block bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                  Export PDF
+                </a>
+              </div>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <div class="text-xs text-gray-600 mb-2">download master data karyawan</div>
+              <a href="{% url 'nurse:export_karyawan_data' %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                Export Master Karyawan (XLS)
+              </a>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <p class="text-sm text-gray-700 mb-3">Download Excel template untuk pencatatan data medical checkup.</p>
+              <a href="{% url 'nurse:download_checkup_template' %}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                📥 Download Checkup Template
+              </a>
+            </div>
+          </div>
+        </section>
+      {% endif %}
+    {% endwith %}
+  </div>
+</div>
+<script>
+  (function(){
+    // Nurse Upload Checkup: button opens file dialog, auto submit on file pick
+    var nurseBtn = document.getElementById('nurse-upload-btn');
+    var nurseFile = document.getElementById('nurse-checkup-file');
+    var nurseForm = document.getElementById('nurse-checkup-form');
+    if (nurseBtn && nurseFile && nurseForm) {
+      nurseBtn.addEventListener('click', function(){ nurseFile.click(); });
+      nurseFile.addEventListener('change', function(){ if (nurseFile.files && nurseFile.files.length) { nurseForm.submit(); } });
+    }
+
+    // Nurse Upload Rekomendasi: button opens file dialog, auto submit on file pick
+    var rekBtn = document.getElementById('nurse-rekomendasi-upload-btn');
+    var rekFile = document.getElementById('nurse-rekomendasi-file');
+    var rekForm = document.getElementById('nurse-rekomendasi-form');
+    if (rekBtn && rekFile && rekForm) {
+      rekBtn.addEventListener('click', function(){ rekFile.click(); });
+      rekFile.addEventListener('change', function(){ if (rekFile.files && rekFile.files.length) { rekForm.submit(); } });
+    }
+  })();
+</script>
+{% endblock %}

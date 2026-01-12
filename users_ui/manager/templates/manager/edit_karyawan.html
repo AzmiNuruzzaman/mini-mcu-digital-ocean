@@ -1,0 +1,1104 @@
+{% extends "manager/manager_index.html" %}
+{% load static %}
+
+{% block title %}{% if view_only %}karyawan{% else %}Manager Dashboard - {{ active_menu_label }}{% endif %}{% endblock %}
+
+{% block page_content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+  <!-- Feedback Messages -->
+  {% if success_message %}
+    <div class="mb-4 p-3 rounded bg-green-100 text-green-800 border border-green-300">{{ success_message }}</div>
+  {% endif %}
+  {% if error_message %}
+    <div class="mb-4 p-3 rounded bg-red-100 text-red-800 border border-red-300">{{ error_message }}</div>
+  {% endif %}
+
+  <!-- Submenu Navigation -->
+  <div class="flex gap-6 mb-4 px-3 pt-3 border-b border-slate-300 bg-white rounded-t-xl shadow-sm">
+      <a href="?submenu=edit" 
+         class="hidden pb-3 px-4 font-medium text-gray-700 hover:text-blue-600 transition-colors
+                {% if active_submenu == 'edit' %}text-blue-600 border-b-2 border-blue-600{% endif %}">
+          Karyawan Profile
+      </a>
+      <a href="{% if view_only %}?uid={{ employee.uid }}&submenu=data_karyawan{% else %}?submenu=data_karyawan{% endif %}" 
+         class="pb-3 px-4 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300
+                {% if active_submenu == 'data_karyawan' %}bg-blue-600 text-white border-blue-600{% endif %}">
+          Data Karyawan
+      </a>
+      <a href="?submenu=edit_data" 
+         class="hidden pb-3 px-4 font-medium text-gray-700 hover:text-blue-600 transition-colors
+                {% if active_submenu == 'edit_data' %}text-blue-600 border-b-2 border-blue-600{% endif %}">
+          Edit Master Data
+      </a>
+      <a href="{% if view_only %}?uid={{ employee.uid }}&submenu=history{% else %}?submenu=history{% endif %}" 
+         class="pb-3 px-4 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300
+                {% if active_submenu == 'history' %}bg-blue-600 text-white border-blue-600{% endif %}">
+          History Medical Check Up
+      </a>
+      <a href="{% if view_only %}?uid={{ employee.uid }}&submenu=grafik{% else %}?submenu=grafik{% endif %}" 
+         class="pb-3 px-4 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300
+                {% if active_submenu == 'grafik' %}bg-blue-600 text-white border-blue-600{% endif %}">
+          Grafik
+      </a>
+      {% if not view_only %}
+      <a href="?submenu=rekomendasi" 
+         class="pb-3 px-4 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300
+                {% if active_submenu == 'rekomendasi' %}bg-blue-600 text-white border-blue-600{% endif %}">
+          Rekomendasi Kesehatan
+      </a>
+      {% endif %}
+  </div>
+
+  {% if active_submenu == 'data_karyawan' %}
+  <!-- Inner tabs under Data Karyawan -->
+  <div class="flex gap-2 mb-4 px-3 pt-3 border-b border-slate-300 bg-white rounded-t-md shadow-sm overflow-x-auto whitespace-nowrap">
+      <a href="?submenu=data_karyawan&subtab=profile" 
+         class="pb-2 px-3 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-green-300
+                {% if active_subtab == 'profile' %}bg-green-600 text-white border-green-600{% endif %}">
+          Karyawan Profile
+      </a>
+      {% if not view_only %}
+      <a href="?submenu=data_karyawan&subtab=edit_data" 
+         class="pb-2 px-3 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-green-300
+                {% if active_subtab == 'edit_data' %}bg-green-600 text-white border-green-600{% endif %}">
+          Edit Master Data
+      </a>
+      <a href="?submenu=data_karyawan&subtab=lokasi" 
+         class="pb-2 px-3 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-green-300
+                {% if active_subtab == 'lokasi' %}bg-green-600 text-white border-green-600{% endif %}">
+          Lokasi Management
+      </a>
+      <a href="?submenu=data_karyawan&subtab=edit_checkup" 
+         class="pb-2 px-3 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-green-300
+                {% if active_subtab == 'edit_checkup' %}bg-green-600 text-white border-green-600{% endif %}">
+          Edit Data Checkup
+      </a>
+      <a href="?submenu=data_karyawan&subtab=tambah" 
+         class="pb-2 px-3 font-medium text-gray-700 hover:bg-slate-100 rounded-t-md border border-slate-300 -mb-px transition-colors focus:outline-none focus:ring-2 focus:ring-green-300
+                {% if active_subtab == 'tambah' %}bg-green-600 text-white border-green-600{% endif %}">
+          Tambah karyawan
+      </a>
+      {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Edit Data Karyawan Content (now shown under Data Karyawan > Karyawan Profile) -->
+  <div id="edit-content" class="rounded-xl border border-slate-300 shadow-sm bg-white p-4 {% if active_submenu != 'data_karyawan' or active_subtab != 'profile' %}hidden{% endif %}">
+      <h2 class="text-xl font-bold mb-3">Edit Karyawan</h2>
+
+      <!-- 1. Selector box by nama on the top -->
+      {% if not view_only %}
+      <form method="get" class="mb-4">
+        <input type="hidden" name="submenu" value="edit"/>
+        <label for="uid" class="block mb-2 font-medium">Pilih Karyawan (Nama):</label>
+        <select name="uid" id="uid" class="select2 border px-2 py-1 rounded w-full" onchange="this.form.submit()">
+          {% for e in employees %}
+            <option value="{{ e.uid }}" {% if employee.uid == e.uid %}selected{% endif %}>{{ e.nama }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      {% endif %}
+
+      <!-- 2. Dataframe style display karyawan info with editable kontak darurat -->
+      <!-- Profile photo + upload -->
+      <section class="p-4 bg-white shadow rounded mb-4">
+        <div class="flex items-center gap-6">
+          <!-- Avatar preview -->
+          <div class="relative flex flex-col items-center isolate">
+            <div class="w-28 h-28 rounded-full ring-4 ring-blue-200 shadow-md overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center z-10">
+              {% if employee_avatar_url %}
+                <img src="{{ employee_avatar_url }}" alt="Foto Karyawan" class="w-full h-full object-cover rounded-full" />
+              {% else %}
+                <span class="text-white text-3xl font-bold">{{ employee.nama|default:"?"|slice:":1"|upper }}</span>
+              {% endif %}
+            </div>
+            {% if not view_only %}
+            <!-- Upload button overlay -->
+            <form method="post" action="{{ employee_avatar_upload_url }}" enctype="multipart/form-data" class="absolute inset-0 z-20 flex items-center justify-center">
+              {% csrf_token %}
+              <input type="file" name="avatar" id="avatar-input" accept="image/*" class="hidden" onchange="this.form.submit()" />
+              <label for="avatar-input" class="cursor-pointer h-10 w-10 flex items-center justify-center rounded-full bg-white/90 shadow-md border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition-colors" title="Unggah foto" aria-label="Unggah foto profil">
+                <!-- Camera icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M4 5a2 2 0 012-2h2l1-1h2l1 1h2a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm6 2a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+              </label>
+            </form>
+            {% endif %}
+            <!-- Helper text: file types and size -->
+            <div class="mt-2 text-xs text-slate-700 bg-white/70 backdrop-blur-sm px-2 py-1 rounded shadow-sm">JPG, PNG, WEBP, GIF (maks 2MB)</div>
+          </div>
+          <!-- Basic identity -->
+          <div>
+            <div class="text-2xl font-bold text-slate-800">{{ employee.nama }}</div>
+            <div class="text-sm text-slate-600">UID: <span class="font-mono">{{ employee.uid }}</span></div>
+            <div class="mt-1 inline-flex items-center gap-2">
+              <span class="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200">{{ employee.jabatan|default:"-" }}</span>
+              <span class="px-2 py-1 text-xs rounded-full bg-purple-50 text-purple-700 border border-purple-200">{{ employee.lokasi|default:"-" }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="p-4 bg-white shadow rounded">
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto border-collapse border border-gray-300">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border px-4 py-2 text-left">Field</th>
+                <th class="border px-4 py-2 text-left">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border px-4 py-2">Nama</td>
+                <td class="border px-4 py-2">{{ employee.nama }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">UID</td>
+                <td class="border px-4 py-2"><span class="font-mono">{{ employee.uid }}</span></td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Jabatan</td>
+                <td class="border px-4 py-2">{{ employee.jabatan }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Lokasi</td>
+                <td class="border px-4 py-2">{{ employee.lokasi }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Tanggal Lahir</td>
+                <td class="border px-4 py-2">
+                  {% if latest_checkup and latest_checkup.tanggal_lahir %}
+                    {{ latest_checkup.tanggal_lahir }}
+                  {% elif employee.tanggal_lahir %}
+                    {{ employee.tanggal_lahir }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+              <tr class="hidden">
+                <td class="border px-4 py-2">Umur</td>
+                <td class="border px-4 py-2">
+                  {% if latest_checkup and latest_checkup.umur %}
+                    {{ latest_checkup.umur }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Derajat Kesehatan</td>
+                <td class="border px-4 py-2">
+                  {% if latest_checkup and latest_checkup.derajat_kesehatan %}
+                    {% with dk=latest_checkup.derajat_kesehatan|upper %}
+                      {% if dk == "P1" or dk == "P2" or dk == "P3" %}
+                        <span class="text-green-600 font-semibold">{{ dk }}</span>
+                      {% elif dk == "P4" %}
+                        <span class="text-yellow-600 font-semibold">{{ dk }}</span>
+                      {% elif dk == "P5" %}
+                        <span class="text-orange-600 font-semibold">{{ dk }}</span>
+                      {% elif dk == "P6" or dk == "P7" %}
+                        <span class="text-red-600 font-semibold">{{ dk }}</span>
+                      {% elif dk %}
+                        <span class="text-gray-700 font-semibold">{{ dk }}</span>
+                      {% else %}
+                        <span class="text-gray-400 italic">-</span>
+                      {% endif %}
+                    {% endwith %}
+                  {% elif employee.derajat_kesehatan %}
+                    {% with dk=employee.derajat_kesehatan|upper %}
+                      {% if dk == "P1" or dk == "P2" or dk == "P3" %}
+                        <span class="text-green-600 font-semibold">{{ dk }}</span>
+                      {% elif dk == "P4" %}
+                        <span class="text-yellow-600 font-semibold">{{ dk }}</span>
+                      {% elif dk == "P5" %}
+                        <span class="text-orange-600 font-semibold">{{ dk }}</span>
+                      {% elif dk == "P6" or dk == "P7" %}
+                        <span class="text-red-600 font-semibold">{{ dk }}</span>
+                      {% elif dk %}
+                        <span class="text-gray-700 font-semibold">{{ dk }}</span>
+                      {% else %}
+                        <span class="text-gray-400 italic">-</span>
+                      {% endif %}
+                    {% endwith %}
+                  {% else %}
+                    <span class="text-gray-400 italic">-</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Berat</td>
+                <td class="border px-4 py-2">
+                  {% if latest_checkup and latest_checkup.berat %}
+                    {{ latest_checkup.berat }}
+                  {% elif employee.berat %}
+                    {{ employee.berat }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Tinggi</td>
+                <td class="border px-4 py-2">
+                  {% if latest_checkup and latest_checkup.tinggi %}
+                    {{ latest_checkup.tinggi }}
+                  {% elif employee.tinggi %}
+                    {{ employee.tinggi }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">BMI</td>
+                <td class="border px-4 py-2">
+                  {% if latest_checkup and latest_checkup.bmi %}
+                    {{ latest_checkup.bmi }}
+                  {% elif employee.bmi %}
+                    {{ employee.bmi }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">BMI Category</td>
+                <td class="border px-4 py-2">{{ employee.bmi_category|default:"-" }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Kontak Darurat</td>
+                <td class="border px-4 py-2">
+                  {% if not view_only %}
+                  <form method="post" action="{% url 'manager:edit_karyawan' employee.uid %}?submenu=edit" class="flex items-center gap-2">
+                    {% csrf_token %}
+                    <input type="text" name="kontak_darurat" value="{{ employee.kontak_darurat|default:'' }}" placeholder="Masukkan kontak darurat" class="border px-2 py-1 rounded w-full"/>
+                    <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Simpan</button>
+                  </form>
+                  {% else %}
+                    {{ employee.kontak_darurat|default:"-" }}
+                  {% endif %}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- MCU DataFrame -->
+        <div class="mt-6 p-4 bg-white shadow rounded">
+          <h3 class="text-lg font-semibold mb-3">MCU</h3>
+          <div class="overflow-x-auto">
+            <table class="min-w-full table-auto border-collapse border border-gray-300">
+              <thead>
+                <tr class="bg-gray-100">
+                  <th class="border px-4 py-2 text-left">Field</th>
+                  <th class="border px-4 py-2 text-left">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border px-4 py-2">Tanggal MCU</td>
+                  <td class="border px-4 py-2">{{ employee.tanggal_MCU|default:"-" }}</td>
+                </tr>
+                <tr>
+                  <td class="border px-4 py-2">Expired MCU</td>
+                  <td class="border px-4 py-2">{{ employee.expired_MCU|default:"-" }}</td>
+                </tr>
+                <tr>
+                  <td class="border px-4 py-2">Estimasi Hari ke Expired</td>
+                  <td class="border px-4 py-2">{{ mcu_expiry_estimate|default:"-" }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Latest Medical Checkup (DataFrame-style) -->
+      <section class="mt-6 p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-3">Data Checkup Terakhir</h3>
+        {% if latest_checkup %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto border-collapse border border-gray-300">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border px-4 py-2 text-left">Field</th>
+                <th class="border px-4 py-2 text-left">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border px-4 py-2">Tanggal Checkup</td>
+                <td class="border px-4 py-2">{{ latest_checkup.tanggal_checkup }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Gula Darah Puasa</td>
+                <td class="border px-4 py-2 {% if latest_checkup.flags and latest_checkup.flags.gdp_high %}text-red-600 font-semibold{% endif %}">{{ latest_checkup.gula_darah_puasa|default:"-" }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Gula Darah Sewaktu</td>
+                <td class="border px-4 py-2 {% if latest_checkup.flags and latest_checkup.flags.gds_high %}text-red-600 font-semibold{% endif %}">{{ latest_checkup.gula_darah_sewaktu|default:"-" }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Cholesterol</td>
+                <td class="border px-4 py-2 {% if latest_checkup.flags and latest_checkup.flags.chol_high %}text-red-600 font-semibold{% endif %}">{{ latest_checkup.cholesterol|default:"-" }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Asam Urat</td>
+                <td class="border px-4 py-2 {% if latest_checkup.flags and latest_checkup.flags.asam_high %}text-red-600 font-semibold{% endif %}">{{ latest_checkup.asam_urat|default:"-" }}</td>
+              </tr>
+              {% if not view_only %}
+              <tr>
+                <td class="border px-4 py-2">Derajat Kesehatan</td>
+                <td class="border px-4 py-2">
+                  {% with dk=latest_checkup.derajat_kesehatan|default:""|upper %}
+                    {% if dk == "P1" or dk == "P2" or dk == "P3" %}
+                      <span class="text-green-600 font-semibold">{{ dk }}</span>
+                    {% elif dk == "P4" %}
+                      <span class="text-yellow-600 font-semibold">{{ dk }}</span>
+                    {% elif dk == "P5" %}
+                      <span class="text-orange-600 font-semibold">{{ dk }}</span>
+                    {% elif dk == "P6" or dk == "P7" %}
+                      <span class="text-red-600 font-semibold">{{ dk }}</span>
+                    {% elif dk %}
+                      <span class="text-gray-700 font-semibold">{{ dk }}</span>
+                    {% else %}
+                      <span class="text-gray-400 italic">-</span>
+                    {% endif %}
+                  {% endwith %}
+                </td>
+              </tr>
+              {% endif %}
+              <tr>
+                <td class="border px-4 py-2">Lingkar Perut (cm)</td>
+                <td class="border px-4 py-2">{{ latest_checkup.lingkar_perut|default:"-" }}</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Status</td>
+                <td class="border px-4 py-2">
+                  {% if latest_checkup and latest_checkup.status %}
+                    <span class="inline-block px-2 py-1 rounded text-white {% if latest_checkup.status == 'Unwell' %}bg-red-500{% else %}bg-green-500{% endif %}">{{ latest_checkup.status }}</span>
+                  {% else %}
+                    <span class="text-gray-500">-</span>
+                  {% endif %}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <div class="p-4 bg-gray-50 border rounded text-gray-500">Belum ada data medical checkup.</div>
+        {% endif %}
+      </section>
+  </div>
+
+  <!-- Edit Master Data Content (empty; now under Data Karyawan > Edit Master Data) -->
+  {% if not view_only %}
+  <div id="edit-data-content" class="rounded-xl border border-slate-300 shadow-sm bg-white p-4 {% if active_submenu != 'data_karyawan' or active_subtab != 'edit_data' %}hidden{% endif %}">
+      <h2 class="text-xl font-bold mb-3">Edit Master Data</h2>
+      <div class="mb-2">
+          <span class="text-sm text-green-600 font-semibold cursor-help" title="Pilih karyawan di tab Karyawan Profile">Pilih karyawan di tab Karyawan Profile</span>
+      </div>
+      {% include 'manager/partials/edit_karyawan_form.html' with karyawan=employee %}
+  </div>
+  {% endif %}
+
+  {% if not view_only %}
+  <div id="lokasi-management-content" class="rounded-xl border border-slate-300 shadow-sm bg-white p-4 {% if active_submenu != 'data_karyawan' or active_subtab != 'lokasi' %}hidden{% endif %}">
+      <h2 class="text-xl font-bold mb-3">Lokasi Management</h2>
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold mb-2">Daftar Lokasi Saat Ini</h3>
+        {% if lokasi_list and lokasi_list|length > 0 %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto border-collapse border border-gray-300">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border px-4 py-2 text-left">No</th>
+                <th class="border px-4 py-2 text-left">Nama Lokasi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for nama in lokasi_list %}
+              <tr>
+                <td class="border px-4 py-2">{{ forloop.counter }}</td>
+                <td class="border px-4 py-2">{{ nama }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <div class="p-4 bg-gray-50 border rounded text-gray-500">Belum ada lokasi.</div>
+        {% endif %}
+      </div>
+      <div class="mt-2">
+        <h3 class="text-lg font-semibold mb-2">Tambah Lokasi Baru</h3>
+        <form method="post" action="{% url 'manager:add_lokasi' %}" class="flex items-center gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="current_uid" value="{{ employee.uid }}">
+          <input type="text" name="lokasi" class="border px-2 py-1 rounded w-full" placeholder="Masukkan nama lokasi baru" required>
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Tambah Lokasi</button>
+        </form>
+        <p class="mt-2 text-xs text-gray-500">Catatan: lokasi baru akan tersedia di pilihan Lokasi pada form Edit Master Data dan Tambah karyawan.</p>
+      </div>
+  </div>
+  {% endif %}
+
+  {% if not view_only %}
+  <div id="edit-checkup-content" class="rounded-xl border border-slate-300 shadow-sm bg-white p-4 {% if active_submenu != 'data_karyawan' or active_subtab != 'edit_checkup' %}hidden{% endif %}">
+      <h2 class="text-xl font-bold mb-3">Edit Data Checkup</h2>
+      <div class="mb-3">
+        <div class="text-sm text-gray-700">Nama: <span class="font-semibold">{{ employee.nama }}</span></div>
+        <div class="text-sm text-gray-700">UID: <span class="font-mono">{{ employee.uid }}</span></div>
+      </div>
+      <form method="post" action="{% url 'manager:save_medical_checkup' employee.uid %}?submenu=data_karyawan&subtab=edit_checkup" class="space-y-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold mb-1">Tanggal Checkup</label>
+            <input type="date" name="tanggal_checkup" class="w-full border px-2 py-1 rounded">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Gula Darah Puasa</label>
+            <input type="number" step="any" name="gula_darah_puasa" class="w-full border px-2 py-1 rounded" placeholder="mg/dL">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Gula Darah Sewaktu</label>
+            <input type="number" step="any" name="gula_darah_sewaktu" class="w-full border px-2 py-1 rounded" placeholder="mg/dL">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Tekanan Darah</label>
+            <input type="text" name="tekanan_darah" class="w-full border px-2 py-1 rounded" placeholder="mis. 120/80">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Cholesterol</label>
+            <input type="number" step="any" name="cholesterol" class="w-full border px-2 py-1 rounded" placeholder="mg/dL">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Asam Urat</label>
+            <input type="number" step="any" name="asam_urat" class="w-full border px-2 py-1 rounded" placeholder="mg/dL">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Lingkar Perut (cm)</label>
+            <input type="number" step="any" name="lingkar_perut" class="w-full border px-2 py-1 rounded" placeholder="cm">
+          </div>
+        </div>
+        <div class="mt-4">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Checkup</button>
+        </div>
+      </form>
+      <p class="mt-2 text-xs text-gray-500">Catatan: jika tanggal tidak diisi, sistem akan menggunakan tanggal hari ini.</p>
+  </div>
+  {% endif %}
+
+  {% if not view_only %}
+  <!-- Rekomendasi Kesehatan Content (moved to top-level submenu) -->
+  <div id="rekomendasi-tab" class="rounded-xl border border-slate-300 shadow-sm bg-white p-4 {% if active_submenu != 'rekomendasi' %}hidden{% endif %}">
+      <h2 class="text-xl font-bold mb-3">Rekomendasi Kesehatan (Global)</h2>
+      <p class="text-sm text-gray-600 mb-3">Input rekomendasi per parameter secara global. Rekomendasi akan berlaku otomatis untuk karyawan yang memiliki parameter <span class="font-semibold">unwell</span>.</p>
+
+      <!-- Fancy intro banner -->
+      <div class="mb-3 inline-flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm shadow-sm">
+        <div class="flex-shrink-0 mt-0.5">💡</div>
+        <div>
+          <div class="font-medium text-slate-800">Rekomendasi Kesehatan (Global)</div>
+          <div class="text-slate-600">Isi rekomendasi per parameter. Gunakan “Simpan semua” untuk menyimpan massal. Rekomendasi berlaku otomatis saat parameter karyawan tidak normal.</div>
+        </div>
+      </div>
+
+      <!-- Legacy per-parameter input grid removed; use the Weekly Editor below -->
+
+      <!-- Legacy bulk save removed -->
+
+      <!-- Section divider to clearly separate inputs and list/df -->
+      <div class="mt-4">
+        <div class="flex items-center gap-2 text-slate-500">
+          <div class="h-px bg-slate-200 flex-1"></div>
+          <div class="text-xs uppercase tracking-wide">Daftar Tersimpan</div>
+          <div class="h-px bg-slate-200 flex-1"></div>
+        </div>
+      </div>
+
+      <!-- Weekly Recommendations Editor -->
+      <div class="mt-6 p-4 border rounded-lg bg-white shadow-sm" id="rekomendasi-weekly-editor">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-slate-900 font-semibold">Editor Rekomendasi Mingguan</h3>
+          <form id="rek-upload-form" method="POST" action="{% url 'manager:upload_rekomendasi_xls' %}" enctype="multipart/form-data" class="inline-flex items-center gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'manager:edit_karyawan' employee.uid %}?submenu=rekomendasi">
+            <input id="rek-upload-file" type="file" name="file" accept=".xls,.xlsx" class="hidden">
+            <button id="rek-upload-btn" type="button" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Upload Rekomendasi (XLS)</button>
+            <a href="{% url 'manager:download_rekomendasi_template' %}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 ml-2">Download Template</a>
+          </form>
+        </div>
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700">Parameter</label>
+          <select id="rek-parameter-select" class="w-64 border px-2 py-1 rounded">
+            <option value="Gula Darah Puasa">Gula Darah Puasa</option>
+            <option value="Gula Darah Sewaktu">Gula Darah Sewaktu</option>
+            <option value="Tekanan Darah">Tekanan Darah</option>
+            <option value="Cholesterol">Cholesterol</option>
+            <option value="Asam Urat">Asam Urat</option>
+          </select>
+          <div class="mt-2 inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-900 text-xs md:text-sm px-3 py-1 rounded-md">Parameter aktif: <span id="rek-editor-selected-name" class="font-semibold"></span></div>
+        </div>
+        <p class="text-xs text-slate-600 mb-3">Format: Hari (Senin-Minggu) × Sarapan, Snack, Makan Siang, Makan Malam, Olahraga yang Disarankan, link luar (youtube etc).</p>
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto border-collapse border border-gray-300" id="weekly-editor-table">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border px-2 py-1">hari</th>
+                <th class="border px-2 py-1">sarapan</th>
+                <th class="border px-2 py-1">snack</th>
+                <th class="border px-2 py-1">makan siang</th>
+                <th class="border px-2 py-1">makan malam</th>
+                <th class="border px-2 py-1">olahraga yang disarankan</th>
+                <th class="border px-2 py-1">link luar</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border px-2 py-1 font-semibold">senin</td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="senin" data-field="sarapan"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="senin" data-field="snack"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="senin" data-field="makan_siang"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="senin" data-field="makan_malam"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="senin" data-field="olahraga"></td>
+                <td class="border px-2 py-1"><input type="url" class="w-full border px-2 py-1 rounded" data-day="senin" data-field="link" placeholder="https://... (opsional)"></td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1 font-semibold">selasa</td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="selasa" data-field="sarapan"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="selasa" data-field="snack"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="selasa" data-field="makan_siang"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="selasa" data-field="makan_malam"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="selasa" data-field="olahraga"></td>
+                <td class="border px-2 py-1"><input type="url" class="w-full border px-2 py-1 rounded" data-day="selasa" data-field="link" placeholder="https://... (opsional)"></td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1 font-semibold">rabu</td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="rabu" data-field="sarapan"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="rabu" data-field="snack"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="rabu" data-field="makan_siang"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="rabu" data-field="makan_malam"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="rabu" data-field="olahraga"></td>
+                <td class="border px-2 py-1"><input type="url" class="w-full border px-2 py-1 rounded" data-day="rabu" data-field="link" placeholder="https://... (opsional)"></td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1 font-semibold">kamis</td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="kamis" data-field="sarapan"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="kamis" data-field="snack"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="kamis" data-field="makan_siang"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="kamis" data-field="makan_malam"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="kamis" data-field="olahraga"></td>
+                <td class="border px-2 py-1"><input type="url" class="w-full border px-2 py-1 rounded" data-day="kamis" data-field="link" placeholder="https://... (opsional)"></td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1 font-semibold">jumat</td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="jumat" data-field="sarapan"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="jumat" data-field="snack"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="jumat" data-field="makan_siang"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="jumat" data-field="makan_malam"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="jumat" data-field="olahraga"></td>
+                <td class="border px-2 py-1"><input type="url" class="w-full border px-2 py-1 rounded" data-day="jumat" data-field="link" placeholder="https://... (opsional)"></td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1 font-semibold">sabtu</td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="sabtu" data-field="sarapan"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="sabtu" data-field="snack"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="sabtu" data-field="makan_siang"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="sabtu" data-field="makan_malam"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="sabtu" data-field="olahraga"></td>
+                <td class="border px-2 py-1"><input type="url" class="w-full border px-2 py-1 rounded" data-day="sabtu" data-field="link" placeholder="https://... (opsional)"></td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1 font-semibold">minggu</td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="minggu" data-field="sarapan"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="minggu" data-field="snack"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="minggu" data-field="makan_siang"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="minggu" data-field="makan_malam"></td>
+                <td class="border px-2 py-1"><input type="text" class="w-full border px-2 py-1 rounded" data-day="minggu" data-field="olahraga"></td>
+                <td class="border px-2 py-1"><input type="url" class="w-full border px-2 py-1 rounded" data-day="minggu" data-field="link" placeholder="https://... (opsional)"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-3 flex items-center gap-2">
+          <button type="button" id="rek-save-weekly" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Simpan Global Plan</button>
+          <button type="button" id="rek-clear-weekly" class="bg-slate-200 text-slate-800 px-3 py-1 rounded hover:bg-slate-300">Kosongkan</button>
+        </div>
+      </div>
+
+      <!-- Daftar Rekomendasi Mingguan -->
+      <div class="mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-semibold">Global Plan Mingguan (Tersimpan)</h3>
+          <div class="text-xs text-slate-600">Klik Edit untuk memuat data ke editor di atas.</div>
+        </div>
+        <div id="rek-table-selected-name" class="mb-2 inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-900 text-xs md:text-sm px-3 py-1 rounded-md"></div>
+        <div class="overflow-x-auto">
+          <table class="min-w-max w-full table-auto border-collapse border border-gray-300" id="rekomendasi-weekly-table">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border px-2 py-1 whitespace-nowrap">hari</th>
+                <th class="border px-2 py-1 whitespace-nowrap">sarapan</th>
+                <th class="border px-2 py-1 whitespace-nowrap">snack</th>
+                <th class="border px-2 py-1 whitespace-nowrap">makan siang</th>
+                <th class="border px-2 py-1 whitespace-nowrap">makan malam</th>
+                <th class="border px-2 py-1 whitespace-nowrap min-w-[160px]">olahraga yang disarankan</th>
+                <th class="border px-2 py-1 whitespace-nowrap min-w-[240px]">link luar</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="mt-2 text-xs text-slate-600" id="weekly-updated-at"></div>
+          <div class="mt-2">
+            <button type="button" class="text-blue-700 hover:underline" id="btn-edit-global">Edit</button>
+            <button type="button" class="text-red-700 hover:underline ml-4" id="btn-del-global">Hapus</button>
+            <button type="button" class="text-red-700 hover:underline ml-4" id="btn-del-all-global">Hapus semua</button>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Legacy rekomendasi list removed; using weekly table above -->
+
+      <!-- Minimal JS for CRUD operations -->
+      <script>
+      (function(){
+        const API_BASE = "/manager";
+        const listURL = `${API_BASE}/api/rekomendasi_global/`;
+        const createURL = `${API_BASE}/api/rekomendasi_global/create/`;
+        const deleteAllURL = `${API_BASE}/api/rekomendasi_global/delete_all/`;
+        let currentGlobalId = null;
+        let currentPlan = null;
+        const defaultParams = ["Gula Darah Puasa","Gula Darah Sewaktu","Tekanan Darah","Cholesterol","Asam Urat"];
+
+        const dayOrder = ["senin","selasa","rabu","kamis","jumat","sabtu","minggu"];
+        const dayLabels = { senin:"senin", selasa:"selasa", rabu:"rabu", kamis:"kamis", jumat:"jumat", sabtu:"sabtu", minggu:"minggu" };
+        const fields = ["sarapan","snack","makan_siang","makan_malam","olahraga","link"];
+
+        const escapeHtml = (str)=>String(str||'').replace(/[&<>"']/g, (ch)=>({
+          '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'
+        })[ch]);
+        const linkifyHtml = (raw)=>{
+          try{
+            const text = String(raw||'');
+            const patterns = [
+              /(https?:\/\/[^\s]+)/g,
+              /(www\.[^\s]+)/g,
+              /([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g,
+            ];
+            let result = escapeHtml(text);
+            const makeLink = (u)=>{
+              const href = (u.startsWith('http://') || u.startsWith('https://')) ? u : `https://${u}`;
+              const display = escapeHtml(u);
+              return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${display}</a>`;
+            };
+            for (const rx of patterns){
+              result = result.replace(rx, (m)=> makeLink(m));
+            }
+            return result;
+          }catch(e){ return escapeHtml(raw||''); }
+        };
+
+        function readEditor(){
+          const plan = {};
+          dayOrder.forEach(day => {
+            plan[day] = {};
+            fields.forEach(f => {
+              const el = document.querySelector(`#weekly-editor-table input[data-day="${day}"][data-field="${f}"]`);
+              plan[day][f] = (el && el.value ? el.value.trim() : "");
+            });
+          });
+          return plan;
+        }
+        function fillEditor(plan){
+          dayOrder.forEach(day => {
+            fields.forEach(f => {
+              const el = document.querySelector(`#weekly-editor-table input[data-day="${day}"][data-field="${f}"]`);
+              if (el) el.value = (plan && plan[day] && plan[day][f]) ? plan[day][f] : '';
+            });
+          });
+        }
+        function clearWeekly(){
+          dayOrder.forEach(day => {
+            fields.forEach(f => {
+              const el = document.querySelector(`#weekly-editor-table input[data-day="${day}"][data-field="${f}"]`);
+              if (el) el.value = '';
+            });
+          });
+        }
+
+        function renderTable(plan, updatedAt){
+          const tbody = document.querySelector('#rekomendasi-weekly-table tbody');
+          if (!tbody) return;
+          tbody.innerHTML = '';
+          dayOrder.forEach(day => {
+            const tr = document.createElement('tr');
+            const p = (plan && plan[day]) ? plan[day] : {};
+            tr.innerHTML = `
+              <td class="border px-2 py-1 font-semibold whitespace-nowrap">${dayLabels[day]}</td>
+              <td class="border px-2 py-1 whitespace-nowrap">${escapeHtml(p.sarapan||'')}</td>
+              <td class="border px-2 py-1 whitespace-nowrap">${escapeHtml(p.snack||'')}</td>
+              <td class="border px-2 py-1 whitespace-nowrap">${escapeHtml(p.makan_siang||'')}</td>
+              <td class="border px-2 py-1 whitespace-nowrap">${escapeHtml(p.makan_malam||'')}</td>
+              <td class="border px-2 py-1 whitespace-nowrap min-w-[160px]">${escapeHtml(p.olahraga||'')}</td>
+              <td class="border px-2 py-1 whitespace-nowrap min-w-[240px]">${linkifyHtml(p.link||'')}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+          const up = document.getElementById('weekly-updated-at');
+          if (up){ up.textContent = updatedAt ? `Terakhir diupdate: ${new Date(updatedAt).toLocaleString()}` : ''; }
+        }
+
+        function getSelectedParam(){
+          const el = document.getElementById('rek-parameter-select');
+          return el ? String(el.value||'').trim() : 'Gula Darah Puasa';
+        }
+
+        async function loadWeeklyGlobal(){
+          try{
+            const res = await fetch(listURL, { headers: { 'Accept':'application/json' } });
+            const j = await res.json();
+            const items = j.items || [];
+            const params = items.map(x => String(x.parameter||'')).filter(p=>p);
+            const selectEl = document.getElementById('rek-parameter-select');
+            if (selectEl){
+              const prev = getSelectedParam();
+              let html = '';
+              const toShow = params.length ? params : defaultParams;
+              toShow.forEach(p => { html += `<option value="${p}">${p}</option>`; });
+              selectEl.innerHTML = html;
+              if (prev && toShow.includes(prev)) selectEl.value = prev; else selectEl.value = toShow[0];
+            }
+            const sel = getSelectedParam();
+            try{
+              const el1 = document.getElementById('rek-editor-selected-name');
+              if (el1) el1.textContent = sel;
+              const el2 = document.getElementById('rek-table-selected-name');
+              if (el2) el2.textContent = `Menampilkan parameter: ${sel}`;
+            }catch(e){}
+            let item = items.find(x => String(x.parameter||'') === sel);
+            if (!item){ currentGlobalId = null; currentPlan = null; renderTable(null, null); return; }
+            currentGlobalId = item.id || null;
+            // Prefer weekly_plan; fallback to legacy weekly day text -> map to sarapan only
+            const plan = item.weekly_plan || null;
+            if (plan){ currentPlan = plan; }
+            else {
+              const w = item.weekly || {};
+              const legacyMap = {};
+              dayOrder.forEach(day => { legacyMap[day] = { sarapan: w[day]||'', snack:'', makan_siang:'', makan_malam:'', olahraga:'', link:'' }; });
+              currentPlan = legacyMap;
+            }
+            renderTable(currentPlan, item.updated_at);
+          }catch(e){ console.error(e); }
+        }
+
+        async function saveWeekly(){
+          const btn = document.getElementById('rek-save-weekly');
+          const originalLabel = btn ? btn.textContent : '';
+          if (btn){ btn.disabled = true; btn.textContent = 'Menyimpan...'; btn.classList.add('opacity-50','cursor-not-allowed'); }
+          try{
+            const plan = readEditor();
+            const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+            const body = JSON.stringify({ parameter: getSelectedParam(), weekly_plan: plan });
+            if (currentGlobalId){
+              await fetch(`${API_BASE}/api/rekomendasi_global/${currentGlobalId}/`, { method: 'PUT', headers, body });
+            } else {
+              const res = await fetch(createURL, { method: 'POST', headers, body });
+              const j = await res.json();
+              currentGlobalId = j && j.id ? j.id : null;
+            }
+            if (btn){ btn.textContent = 'Tersimpan ✓'; setTimeout(()=>{ btn.textContent = originalLabel || 'Simpan Global Plan'; }, 1000); }
+            await loadWeeklyGlobal();
+          }catch(e){
+            console.error(e);
+            alert('Gagal menyimpan Global Plan.');
+            if (btn){ btn.textContent = 'Gagal ❌'; setTimeout(()=>{ btn.textContent = originalLabel || 'Simpan Global Plan'; }, 1200); }
+          } finally {
+            if (btn){ btn.disabled = false; btn.classList.remove('opacity-50','cursor-not-allowed'); }
+          }
+        }
+
+        async function deleteGlobal(){
+          if (!currentGlobalId){ alert('Tidak ada Global Plan untuk dihapus.'); return; }
+          if (!confirm('Yakin ingin menghapus Global Plan?')) return;
+          try{
+            await fetch(`${API_BASE}/api/rekomendasi_global/${currentGlobalId}/delete/`, { method: 'DELETE' });
+            currentGlobalId = null; currentPlan = null;
+            renderTable(null, null);
+            clearWeekly();
+          }catch(e){ console.error(e); alert('Gagal menghapus.'); }
+        }
+
+        // Bind actions
+        const btnSaveWeekly = document.getElementById('rek-save-weekly');
+        if (btnSaveWeekly){ btnSaveWeekly.addEventListener('click', () => { try{ saveWeekly(); }catch(e){ console.error(e); } }); }
+        const btnClearWeekly = document.getElementById('rek-clear-weekly');
+        if (btnClearWeekly){ btnClearWeekly.addEventListener('click', () => { try{ clearWeekly(); }catch(e){ console.error(e); } }); }
+        const btnEditGlobal = document.getElementById('btn-edit-global');
+        if (btnEditGlobal){ btnEditGlobal.addEventListener('click', () => { try{ fillEditor(currentPlan||{}); const editor=document.getElementById('rekomendasi-weekly-editor'); if(editor){ window.scrollTo({ top: editor.offsetTop-80, behavior:'smooth' }); } }catch(e){ console.error(e); } }); }
+        const btnDelGlobal = document.getElementById('btn-del-global');
+        if (btnDelGlobal){ btnDelGlobal.addEventListener('click', () => { try{ deleteGlobal(); }catch(e){ console.error(e); } }); }
+
+        const btnDelAll = document.getElementById('btn-del-all-global');
+        if (btnDelAll){
+          btnDelAll.addEventListener('click', async () => {
+            try{
+              if (!confirm('Yakin ingin menghapus semua Global Plan?')) return;
+              const res = await fetch(deleteAllURL, { method: 'DELETE' });
+              if (res.ok){ currentGlobalId = null; currentPlan = null; renderTable(null, null); clearWeekly(); loadWeeklyGlobal(); alert('Semua Global Plan telah dihapus.'); }
+              else { alert('Gagal menghapus semua Global Plan.'); }
+            }catch(e){ console.error(e); alert('Terjadi kesalahan saat menghapus semua.'); }
+          });
+        }
+
+        // Initial load when tab is present
+        if (document.getElementById('rekomendasi-tab')){
+          loadWeeklyGlobal();
+        }
+        const paramSel = document.getElementById('rek-parameter-select');
+        if (paramSel){ paramSel.addEventListener('change', () => { try{ const s=getSelectedParam(); const el1=document.getElementById('rek-editor-selected-name'); if(el1) el1.textContent=s; const el2=document.getElementById('rek-table-selected-name'); if(el2) el2.textContent=`Menampilkan parameter: ${s}`; clearWeekly(); loadWeeklyGlobal(); }catch(e){ console.error(e); } }); }
+        const upBtn = document.getElementById('rek-upload-btn');
+        const upFile = document.getElementById('rek-upload-file');
+        const upForm = document.getElementById('rek-upload-form');
+        if (upBtn && upFile && upForm) {
+          upBtn.addEventListener('click', function(){ try{ upFile.click(); }catch(e){} });
+          upFile.addEventListener('change', function(){ try{ if (upFile.files && upFile.files.length) { upForm.submit(); } }catch(e){} });
+        }
+      })();
+      </script>
+  </div>
+  {% endif %}
+
+  {% if not view_only %}
+  <!-- Tambah Karyawan Content -->
+  <div id="tambah-karyawan-content" class="rounded-xl border border-slate-300 shadow-sm bg-white p-4 {% if active_submenu != 'data_karyawan' or active_subtab != 'tambah' %}hidden{% endif %}">
+      <h2 class="text-xl font-bold mb-3">Tambah karyawan</h2>
+      <form method="post" action="{% url 'manager:add_karyawan' %}" class="space-y-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold mb-1">Nama</label>
+            <input type="text" name="nama" class="w-full border px-2 py-1 rounded" placeholder="Masukkan nama karyawan" required>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Jabatan</label>
+            <input type="text" name="jabatan" class="w-full border px-2 py-1 rounded" placeholder="Masukkan jabatan" required>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Lokasi</label>
+            <select name="lokasi" class="w-full border px-2 py-1 rounded" required>
+              <option value="">Pilih lokasi</option>
+              {% for lokasi in available_lokasi %}
+                <option value="{{ lokasi }}">{{ lokasi }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Tanggal Lahir</label>
+            <input type="date" name="tanggal_lahir" class="w-full border px-2 py-1 rounded">
+          </div>
+        </div>
+        <div class="mt-4">
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Tambah</button>
+        </div>
+      </form>
+  </div>
+  {% endif %}
+
+  <!-- History Medical Check Up Content -->
+  <div id="history-content" class="rounded-xl border border-slate-300 shadow-sm bg-white p-4 {% if active_submenu != 'history' %}hidden{% endif %}">
+      <h2 class="text-xl font-bold mb-3">History Medical Check Up</h2>
+      {% if not view_only %}
+      <a href="{% url 'manager:export_checkup_history_by_uid' employee.uid %}" class="inline-flex items-center bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 mb-3">Download seluruh riwayat (XLS)</a>
+      <a href="{% url 'manager:export_checkup_history_by_uid_pdf' employee.uid %}" class="inline-flex items-center bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700 mb-3 ml-2">Download seluruh riwayat (PDF)</a>
+      <form method="post" action="{% url 'manager:edit_karyawan' employee.uid %}?submenu=history" class="inline-block ml-2" onsubmit="return confirm('Yakin ingin menghapus SEMUA data checkup untuk karyawan ini? Tindakan ini tidak dapat dibatalkan.');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_all_checkups">
+        <button type="submit" class="inline-flex items-center bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 mb-3">Hapus semua data checkup</button>
+      </form>
+      {% endif %}
+      {% if history_dashboard and history_dashboard|length > 0 %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Lahir</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Umur</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BMI</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BMI Category</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Checkup</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lingkar Perut</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gula Darah Puasa</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gula Darah Sewaktu</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cholesterol</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asam Urat</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tekanan Darah</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Derajat Kesehatan</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal MCU</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expired MCU</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for row in history_dashboard %}
+            <tr id="row-{{ row.checkup_id }}">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ forloop.counter }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ row.uid }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ row.nama|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ row.jabatan|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ row.lokasi|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ row.tanggal_lahir|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="number" id="umur-{{ row.checkup_id }}" value="{{ row.umur|default:'' }}" class="w-24 border px-2 py-1 rounded" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="number" step="0.01" id="bmi-{{ row.checkup_id }}" value="{{ row.bmi|default:'' }}" class="w-24 border px-2 py-1 rounded {% if row.flags and row.flags.bmi_high %}text-red-600 font-semibold{% endif %}" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ row.bmi_category|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="text" id="tanggal_checkup-{{ row.checkup_id }}" value="{{ row.tanggal_checkup|default:'' }}" placeholder="dd/mm/yy atau yyyy-mm-dd" class="w-32 border px-2 py-1 rounded" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="number" step="0.01" id="lingkar_perut-{{ row.checkup_id }}" value="{{ row.lingkar_perut|default:'' }}" class="w-24 border px-2 py-1 rounded" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="number" step="0.01" id="gula_darah_puasa-{{ row.checkup_id }}" value="{{ row.gula_darah_puasa|default:'' }}" class="w-24 border px-2 py-1 rounded {% if row.flags and row.flags.gdp_high %}text-red-600 font-semibold{% endif %}" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="number" step="0.01" id="gula_darah_sewaktu-{{ row.checkup_id }}" value="{{ row.gula_darah_sewaktu|default:'' }}" class="w-24 border px-2 py-1 rounded {% if row.flags and row.flags.gds_high %}text-red-600 font-semibold{% endif %}" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="number" step="0.01" id="cholesterol-{{ row.checkup_id }}" value="{{ row.cholesterol|default:'' }}" class="w-24 border px-2 py-1 rounded {% if row.flags and row.flags.chol_high %}text-red-600 font-semibold{% endif %}" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="number" step="0.01" id="asam_urat-{{ row.checkup_id }}" value="{{ row.asam_urat|default:'' }}" class="w-24 border px-2 py-1 rounded {% if row.flags and row.flags.asam_high %}text-red-600 font-semibold{% endif %}" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="text" id="tekanan_darah-{{ row.checkup_id }}" value="{{ row.tekanan_darah|default:'' }}" class="w-28 border px-2 py-1 rounded" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="text" id="derajat_kesehatan-{{ row.checkup_id }}" value="{{ row.derajat_kesehatan|default:'' }}" class="w-20 border px-2 py-1 rounded" disabled />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ row.tanggal_MCU|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ row.expired_MCU|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                {% if row.status == "Unwell" %}
+                  <span class="text-red-600 font-semibold">Unwell</span>
+                {% elif row.status == "Well" %}
+                  <span class="text-green-600 font-semibold">Well</span>
+                {% else %}
+                  <span class="text-gray-400 italic">-</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                {% if row.checkup_id %}
+                  {% if not view_only %}
+                  <a href="{% url 'manager:export_checkup_row' employee.uid row.checkup_id %}" class="inline-flex items-center bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600" title="Download baris ini">XLS</a>
+                  <a href="{% url 'manager:export_checkup_row_pdf' employee.uid row.checkup_id %}" class="inline-flex items-center bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 ml-2" title="Download baris ini (PDF)">PDF</a>
+                  <form method="post" action="{% url 'manager:edit_karyawan' employee.uid %}?submenu=history" class="inline-block ml-2" onsubmit="return confirm('Yakin ingin menghapus baris riwayat ini?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="checkup_id" value="{{ row.checkup_id }}" />
+                    <button type="submit" class="inline-flex items-center bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700" title="Hapus baris ini">Hapus</button>
+                  </form>
+                  <button type="button" id="editbtn-{{ row.checkup_id }}" class="inline-flex items-center bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 ml-2" onclick="toggleEditRow('{{ row.checkup_id }}')">Edit</button>
+                  <form id="saveform-{{ row.checkup_id }}" method="post" action="{% url 'manager:edit_karyawan' employee.uid %}?submenu=history" class="inline-block ml-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit_row" />
+                    <input type="hidden" name="checkup_id" value="{{ row.checkup_id }}" />
+                    <input type="hidden" name="tanggal_checkup" />
+                    <input type="hidden" name="tinggi" />
+                    <input type="hidden" name="berat" />
+                    <input type="hidden" name="lingkar_perut" />
+                    <input type="hidden" name="bmi" />
+                    <input type="hidden" name="umur" />
+                    <input type="hidden" name="gula_darah_puasa" />
+                    <input type="hidden" name="gula_darah_sewaktu" />
+                    <input type="hidden" name="cholesterol" />
+                    <input type="hidden" name="asam_urat" />
+                    <input type="hidden" name="tekanan_darah" />
+                    <input type="hidden" name="derajat_kesehatan" />
+                    <button type="button" id="savebtn-{{ row.checkup_id }}" class="inline-flex items-center bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 hidden" onclick="submitEditRow('{{ row.checkup_id }}')">Save</button>
+                  </form>
+                  {% else %}
+                  <span class="text-gray-400 italic">-</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-gray-400 italic">-</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="p-4 bg-gray-50 border rounded text-gray-500">
+          Belum ada data medical checkup.
+        </div>
+      {% endif %}
+      <script>
+        function toggleEditRow(id) {
+          var fields = ['umur','bmi','tanggal_checkup','lingkar_perut','gula_darah_puasa','gula_darah_sewaktu','cholesterol','asam_urat','tekanan_darah','derajat_kesehatan','tinggi','berat'];
+          fields.forEach(function(f){
+            var el = document.getElementById(f+'-'+id);
+            if (el) el.disabled = !el.disabled;
+          });
+          var editBtn = document.getElementById('editbtn-'+id);
+          var saveBtn = document.getElementById('savebtn-'+id);
+          if (editBtn && saveBtn) {
+            if (saveBtn.classList.contains('hidden')) {
+              saveBtn.classList.remove('hidden');
+              editBtn.classList.add('hidden');
+            } else {
+              saveBtn.classList.add('hidden');
+              editBtn.classList.remove('hidden');
+            }
+          }
+        }
+        function submitEditRow(id) {
+          var form = document.getElementById('saveform-'+id);
+          if (!form) return;
+          var map = ['tanggal_checkup','tinggi','berat','lingkar_perut','bmi','umur','gula_darah_puasa','gula_darah_sewaktu','cholesterol','asam_urat','tekanan_darah','derajat_kesehatan'];
+          map.forEach(function(f){
+            var vis = document.getElementById(f + '-' + id);
+            var hid = form.querySelector('input[name="'+f+'"]');
+            if (vis && hid) hid.value = vis.value;
+          });
+          form.submit();
+        }
+      </script>
+    </div>
+
+  <!-- Grafik Content (rendered by Vue GrafikManager, matching dashboard/grafik exactly) -->
+  <div id="grafik-content" class="rounded-xl border border-slate-300 shadow-sm bg-white p-0 {% if active_submenu != 'grafik' %}hidden{% endif %}">
+    <!-- Vue mount point for GrafikManager -->
+    <div id="grafik-manager"
+         class="min-h-[300px]"
+         data-preselect-uid="{{ employee.uid|default_if_none:'' }}"
+         data-hide-unwell="true"
+         data-hide-karyawan-select="true"
+         data-recommendations-bottom="true"
+         data-recommendations-always="true"></div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block child_scripts %}
+  {% if active_submenu == 'grafik' %}
+    <!-- ECharts for chart rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@6/dist/echarts.min.js"></script>
+    <!-- GrafikManager component (same as dashboard/grafik) -->
+    <script src="{% static 'js/components/grafik_manager.js' %}"></script>
+  {% endif %}
+{% endblock %}

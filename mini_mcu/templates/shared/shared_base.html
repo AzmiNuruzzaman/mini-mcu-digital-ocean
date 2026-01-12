@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mini MCU Manager{% endblock %}</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- Suppress Tailwind CDN production warning while using CDN in this environment -->
+    <script>
+      (function(){
+        var origWarn = console.warn;
+        console.warn = function(){
+          var msg = arguments && arguments.length ? String(arguments[0]) : '';
+          if (msg && msg.indexOf('cdn.tailwindcss.com should not be used in production') !== -1) {
+            return; // mute Tailwind CDN production warning
+          }
+          return origWarn.apply(console, arguments);
+        };
+      })();
+    </script>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Select2 Custom Styling */
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            padding: 5px;
+            border-color: #e5e7eb;
+            border-radius: 0.375rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #0073fe;
+        }
+        .select2-dropdown {
+            border-color: #e5e7eb;
+            border-radius: 0.375rem;
+        }
+        .select2-search__field {
+            border-radius: 0.25rem !important;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border-color: #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        {% if role_title or not view_only %}
+        <div id="app-sidebar" class="w-[310px] bg-[#0073fe] text-white flex-shrink-0 transition-all duration-200 relative isolate z-10">
+            {% block sidebar %}
+                {% include "shared/shared_sidebar.html" %}
+            {% endblock %}
+        </div>
+        {% endif %}
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-hidden">
+            <div class="h-full flex flex-col">
+                <!-- Header -->
+                <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        {% if role_title or not view_only %}
+                        <button id="sidebarToggle" type="button" aria-label="Toggle sidebar"
+                                class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <i class="fas fa-bars"></i>
+                            <span class="hidden sm:inline">Menu</span>
+                        </button>
+                        {% endif %}
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">{% if role_title %}{{ role_title|upper }}{% elif view_only %}KARYAWAN{% else %}MANAGER{% endif %}</h1>
+                            <div class="h-1 w-12 bg-primary mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <img src="{% static 'images/logo.png' %}" alt="Logo" class="h-24">
+                        {% if role_title == 'Manager' or role_title == 'Nurse' %}
+                        <details class="relative">
+                            <summary class="list-none cursor-pointer relative flex items-center">
+                                <i class="fas fa-bell text-2xl text-gray-600 hover:text-gray-800"></i>
+                                {% if mcu_alerts.total|default:0 > 0 %}
+                                <span class="absolute -top-1 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">{{ mcu_alerts.total }}</span>
+                                {% endif %}
+                            </summary>
+                            <div class="absolute right-0 mt-3 w-96 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                <div class="p-4 border-b flex items-center gap-2">
+                                    <i class="fas fa-calendar-exclamation text-yellow-600"></i>
+                                    <span class="font-semibold">Peringatan MCU</span>
+                                    <span class="text-xs text-gray-500 ml-auto">
+                                        {% if mcu_alerts %}Expired: {{ mcu_alerts.expired }} • Soon: {{ mcu_alerts.due_soon }}{% endif %}
+                                    </span>
+                                </div>
+                                <ul class="max-h-64 overflow-auto divide-y">
+                                    {% if mcu_alert_items and mcu_alert_items|length > 0 %}
+                                        {% for item in mcu_alert_items %}
+                                            <li class="p-3 hover:bg-gray-50">
+                                                <a {% if item.url %}href="{{ item.url }}"{% else %}href="#"{% endif %} class="flex items-center gap-3">
+                                                    {% if item.type == 'expired' %}
+                                                        <span class="text-red-600"><i class="fas fa-circle-exclamation"></i></span>
+                                                    {% else %}
+                                                        <span class="text-yellow-600"><i class="fas fa-triangle-exclamation"></i></span>
+                                                    {% endif %}
+                                                    <div class="flex-1">
+                                                        <div class="text-sm font-medium text-gray-900">{{ item.title }}</div>
+                                                        <div class="text-xs text-gray-600">
+                                                            Expired: {{ item.expired_at|default:'-' }}{% if item.days_left %} • {{ item.days_left }} hari lagi{% endif %}
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li class="p-4 text-sm text-gray-500">Tidak ada peringatan saat ini.</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </details>
+                        {% endif %}
+                    </div>
+                </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-auto p-8">
+        <div id="app">
+            {% block main_content %}{% endblock %}
+        </div>
+    </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue (CDN production build) should load BEFORE page-specific extra scripts -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    
+    {% block extra_scripts %}{% endblock %}
+    
+    <script>
+        (function(){
+            try {
+                if (window.$ && $.fn && typeof $.fn.select2 === 'function') {
+                    $(document).ready(function() {
+                        // Initialize all Select2 elements if jQuery + Select2 are available
+                        $('.select2').each(function() {
+                            $(this).select2({
+                                placeholder: "Ketik nama karyawan...",
+                                allowClear: true,
+                                width: '100%'
+                            });
+                        });
+                    });
+                }
+            } catch (e) {
+                // Silently ignore to avoid breaking other scripts (e.g., sidebar toggle)
+            }
+        })();
+    </script>
+    <script>
+        (function(){
+            var sidebar = document.getElementById('app-sidebar');
+            var btn = document.getElementById('sidebarToggle');
+
+            function isHidden(el){
+                if (!el) return true;
+                var cs = window.getComputedStyle(el);
+                return cs.display === 'none' || el.classList.contains('hidden') || el.offsetParent === null;
+            }
+
+            function hide(){
+                if (!sidebar) return;
+                sidebar.classList.add('hidden');
+                sidebar.style.display = 'none';
+                if (btn) btn.setAttribute('aria-expanded','false');
+                try { localStorage.setItem('sidebarHidden','true'); } catch(e) {}
+            }
+
+            function show(){
+                if (!sidebar) return;
+                sidebar.classList.remove('hidden');
+                sidebar.style.display = '';
+                if (btn) btn.setAttribute('aria-expanded','true');
+                try { localStorage.setItem('sidebarHidden','false'); } catch(e) {}
+            }
+
+            function setHidden(hidden){ hidden ? hide() : show(); }
+
+            var saved = null;
+            try { saved = localStorage.getItem('sidebarHidden'); } catch(e) {}
+            var isMobile = window.matchMedia('(max-width: 767px)').matches;
+            var initialHidden = (saved === 'true') || (saved === null && isMobile);
+            setHidden(initialHidden);
+
+            if (btn) {
+                btn.addEventListener('click', function(){
+                    setHidden(!isHidden(sidebar));
+                });
+            }
+
+            // Global toggle for inline onclick fallback
+            window.toggleSidebar = function(){
+                setHidden(!isHidden(sidebar));
+            };
+        })();
+    </script>
+    
+    <!-- Global App entrypoint (mounts Vue components like GrafikManager after they are defined) -->
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

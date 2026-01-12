@@ -1,0 +1,198 @@
+{% extends "manager/manager_index.html" %}
+{% load static %}
+
+{% block page_content %}
+<!-- Removed duplicate page title header -->
+
+<div class="bg-white border border-gray-200 rounded-md shadow-sm">
+  <!-- Folder-style submenu header -->
+  <div class="flex gap-2 px-3 pt-3 border-b border-gray-200">
+    {% with is_active=request.GET.submenu|default:'upload_master' %}
+    <a href="?submenu=upload_master" class="
+      px-3 py-1.5 text-sm font-medium rounded-t-md border border-b-0
+      {% if is_active == 'upload_master' %} bg-green-600 text-white border-green-600 {% else %} bg-white text-gray-700 hover:bg-gray-50 border-gray-300 {% endif %}
+      focus:outline-none focus:ring-2 focus:ring-green-500
+    ">Upload Master</a>
+
+    <a href="?submenu=upload_checkup" class="
+      px-3 py-1.5 text-sm font-medium rounded-t-md border border-b-0
+      {% if is_active == 'upload_checkup' %} bg-green-600 text-white border-green-600 {% else %} bg-white text-gray-700 hover:bg-gray-50 border-gray-300 {% endif %}
+      focus:outline-none focus:ring-2 focus:ring-green-500
+    ">Upload Checkup</a>
+
+    <a href="?submenu=upload_rekomendasi" class="
+      px-3 py-1.5 text-sm font-medium rounded-t-md border border-b-0
+      {% if is_active == 'upload_rekomendasi' %} bg-green-600 text-white border-green-600 {% else %} bg-white text-gray-700 hover:bg-gray-50 border-gray-300 {% endif %}
+      focus:outline-none focus:ring-2 focus:ring-green-500
+    ">Upload Rekomendasi</a>
+
+    <a href="?submenu=export_data" class="
+      px-3 py-1.5 text-sm font-medium rounded-t-md border border-b-0
+      {% if is_active == 'export_data' %} bg-green-600 text-white border-green-600 {% else %} bg-white text-gray-700 hover:bg-gray-50 border-gray-300 {% endif %}
+      focus:outline-none focus:ring-2 focus:ring-green-500
+    ">Export Data</a>
+    {% endwith %}
+  </div>
+
+  <!-- Panel content area -->
+  <div class="px-4 py-4">
+    <!-- Messages -->
+    {% if request.session.success_message %}
+      <div class="mb-4 p-3 rounded bg-green-100 text-green-800 border border-green-300">{{ request.session.success_message }}</div>
+    {% endif %}
+    {% if request.session.error_message %}
+      <div class="mb-4 p-3 rounded bg-red-100 text-red-800 border border-red-300">{{ request.session.error_message }}</div>
+    {% endif %}
+    {% if request.session.warning_message %}
+      <div class="mb-4 p-3 rounded bg-yellow-100 text-yellow-800 border border-yellow-300">{{ request.session.warning_message }}</div>
+    {% endif %}
+    {% with is_active=request.GET.submenu|default:'upload_master' %}
+      {% if is_active == 'upload_master' %}
+        <!-- Upload Master Karyawan -->
+        <section>
+          <h3 class="text-lg font-semibold mb-4">Upload Master Karyawan</h3>
+          <form id="manager-master-form" method="POST" action="{% url 'manager:upload_master_karyawan_xls' %}" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Select Excel File</label>
+              <input id="manager-master-file" type="file" name="file" accept=".xls,.xlsx" class="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100">
+            </div>
+            <button id="manager-master-upload-btn" type="button" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              Upload Master Karyawan
+            </button>
+          </form>
+
+          {% if preview_cols and preview_rows %}
+          <div class="mt-6">
+            <h4 class="text-md font-semibold mb-2">Preview Data</h4>
+            <div class="overflow-x-auto border border-gray-200 rounded">
+              <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    {% for col in preview_cols %}
+                      <th class="px-3 py-2 text-left font-medium text-gray-700">{{ col|title }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  {% for row in preview_rows %}
+                    <tr class="hover:bg-gray-50">
+                      {% for cell in row %}
+                        <td class="px-3 py-2 text-gray-800">{{ cell }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endif %}
+        </section>
+      {% elif is_active == 'upload_checkup' %}
+        <!-- Upload Medical Checkup -->
+        <section>
+          <h3 class="text-lg font-semibold mb-4">Upload Medical Checkup Data</h3>
+          <form id="manager-checkup-form" method="POST" action="{% url 'manager:upload_medical_checkup_xls' %}" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Select Excel File</label>
+              <input id="manager-checkup-file" type="file" name="file" accept=".xls,.xlsx" class="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100">
+            </div>
+            <button id="manager-checkup-upload-btn" type="button" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              Upload Checkup Data
+            </button>
+          </form>
+        </section>
+      {% elif is_active == 'upload_rekomendasi' %}
+        <section>
+          <h3 class="text-lg font-semibold mb-4">Upload Rekomendasi Kesehatan</h3>
+          <p class="text-xs text-gray-600 mb-2">Format: tiap sheet mewakili parameter, nama sheet = nama parameter.</p>
+          <form id="manager-rekomendasi-form" method="POST" action="{% url 'manager:upload_rekomendasi_xls' %}" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Select Excel File</label>
+              <input id="manager-rekomendasi-file" type="file" name="file" accept=".xls,.xlsx" class="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100">
+            </div>
+            <button id="manager-rekomendasi-upload-btn" type="button" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              Upload Rekomendasi
+            </button>
+            <a href="{% url 'manager:download_rekomendasi_template' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors inline-block ml-2">
+              📥 Download Template
+            </a>
+          </form>
+        </section>
+      {% elif is_active == 'export_data' %}
+        <!-- Export Data -->
+        <section>
+          <h3 class="text-lg font-semibold mb-4">Export Data</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <div class="text-xs text-gray-600 mb-2">download semua data checkup (sesuai dashboard)</div>
+              <a href="{% url 'manager:export_checkup_data' %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                Export All Checkup Data
+              </a>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <div class="text-xs text-gray-600 mb-2">download master data karyawan (schema sama seperti upload master)</div>
+              <a href="{% url 'manager:export_master_karyawan' %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                Export Master Karyawan
+              </a>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <p class="text-sm text-gray-700 mb-3">Download Excel template untuk medical checkup.</p>
+              <a href="{% url 'manager:download_checkup_template' %}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                📥 Download Checkup Template
+              </a>
+            </div>
+          </div>
+        </section>
+      {% endif %}
+    {% endwith %}
+  </div>
+</div>
+<script>
+  (function(){
+    // Manager Upload Master: button opens file dialog, auto submit on file pick
+    var masterBtn = document.getElementById('manager-master-upload-btn');
+    var masterFile = document.getElementById('manager-master-file');
+    var masterForm = document.getElementById('manager-master-form');
+    if (masterBtn && masterFile && masterForm) {
+      masterBtn.addEventListener('click', function(){ masterFile.click(); });
+      masterFile.addEventListener('change', function(){ if (masterFile.files && masterFile.files.length) { masterForm.submit(); } });
+    }
+
+    // Manager Upload Checkup: button opens file dialog, auto submit on file pick
+    var checkupBtn = document.getElementById('manager-checkup-upload-btn');
+    var checkupFile = document.getElementById('manager-checkup-file');
+    var checkupForm = document.getElementById('manager-checkup-form');
+    if (checkupBtn && checkupFile && checkupForm) {
+      checkupBtn.addEventListener('click', function(){ checkupFile.click(); });
+      checkupFile.addEventListener('change', function(){ if (checkupFile.files && checkupFile.files.length) { checkupForm.submit(); } });
+    }
+
+    // Manager Upload Rekomendasi: button opens file dialog, auto submit on file pick
+    var rekBtn = document.getElementById('manager-rekomendasi-upload-btn');
+    var rekFile = document.getElementById('manager-rekomendasi-file');
+    var rekForm = document.getElementById('manager-rekomendasi-form');
+    if (rekBtn && rekFile && rekForm) {
+      rekBtn.addEventListener('click', function(){ rekFile.click(); });
+      rekFile.addEventListener('change', function(){ if (rekFile.files && rekFile.files.length) { rekForm.submit(); } });
+    }
+  })();
+</script>
+{% endblock %}
