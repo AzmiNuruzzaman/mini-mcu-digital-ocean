@@ -5,3 +5,5 @@ __pycache__
 .gitignore
 /staticfiles
 /media
+node_modules
+npm-debug.log
