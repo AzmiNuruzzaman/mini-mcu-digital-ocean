@@ -21,15 +21,16 @@ urlpatterns = [
     path('grafik/diagnostic-log/', manager_views.grafik_diagnostic_log, name='grafik_diagnostic_log'),
 
     # ---------------- Karyawan Detail / Edit ----------------
-    path('karyawan/<str:uid>/', nurse_views.nurse_karyawan_detail, name='karyawan_detail'),
-    path('karyawan/<str:uid>/upload-avatar/', nurse_views.upload_karyawan_avatar, name='upload_karyawan_avatar'),
-    path('karyawan/<str:uid>/save/', nurse_views.nurse_save_medical_checkup, name='save_checkup'),
+    path('karyawan/<path:uid>/', nurse_views.nurse_karyawan_detail, name='karyawan_detail'),
+    path('karyawan/<path:uid>/upload-avatar/', nurse_views.upload_karyawan_avatar, name='upload_karyawan_avatar'),
+    path('karyawan/<path:uid>/save/', nurse_views.nurse_save_medical_checkup, name='save_checkup'),
+    path('delete-checkup/<int:checkup_id>/', nurse_views.nurse_delete_checkup, name='delete_checkup'),
     # Export history for a specific UID (XLS/PDF)
-    path('export-checkup-history-xls/<str:uid>/', nurse_views.nurse_export_checkup_history_by_uid, name='export_checkup_history_by_uid'),
-    path('export-checkup-history-pdf/<str:uid>/', nurse_views.nurse_export_checkup_history_by_uid_pdf, name='export_checkup_history_by_uid_pdf'),
+    path('export-checkup-history-xls/<path:uid>/', nurse_views.nurse_export_checkup_history_by_uid, name='export_checkup_history_by_uid'),
+    path('export-checkup-history-pdf/<path:uid>/', nurse_views.nurse_export_checkup_history_by_uid_pdf, name='export_checkup_history_by_uid_pdf'),
     # Export a single checkup row (XLS/PDF)
-    path('export-checkup-row-xls/<str:uid>/<int:checkup_id>/', nurse_views.nurse_export_checkup_row, name='export_checkup_row'),
-    path('export-checkup-row-pdf/<str:uid>/<int:checkup_id>/', nurse_views.nurse_export_checkup_row_pdf, name='export_checkup_row_pdf'),
+    path('export-checkup-row-xls/<path:uid>/<int:checkup_id>/', nurse_views.nurse_export_checkup_row, name='export_checkup_row'),
+    path('export-checkup-row-pdf/<path:uid>/<int:checkup_id>/', nurse_views.nurse_export_checkup_row_pdf, name='export_checkup_row_pdf'),
 
     # ---------------- Upload ----------------
     path('upload-export/', nurse_views.nurse_upload_export, name='upload_export'),
