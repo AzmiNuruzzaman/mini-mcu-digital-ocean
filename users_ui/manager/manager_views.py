@@ -350,7 +350,8 @@ def dashboard(request):
         if val == 'expired':
             df = df[df['mcu_is_expired']]
         else:
-            df = df[df['mcu_is_warning']]
+            # Modified: Show both expired and warning (<= 60 days)
+            df = df[df['mcu_is_expired'] | df['mcu_is_warning']]
     
     # Get unique values for dropdowns from filtered data
     # Build a mapping of normalized key -> cleaned display value to dedupe case/spacing
@@ -3179,7 +3180,8 @@ def dashboard(request):
         if val == 'expired':
             df = df[df['mcu_is_expired']]
         elif val in ('warning', 'almost', 'almost_expired', 'almost-expired'):
-            df = df[df['mcu_is_warning']]
+            # Modified: Show both expired and warning (<= 60 days)
+            df = df[df['mcu_is_expired'] | df['mcu_is_warning']]
     
     # Get unique values for dropdowns from filtered data
     # Build a mapping of normalized key -> cleaned display value to dedupe case/spacing

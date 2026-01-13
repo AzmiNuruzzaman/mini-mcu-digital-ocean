@@ -153,7 +153,8 @@ def _build_nurse_filtered_df(request):
     if expiry:
         exp_val = str(expiry).lower()
         if exp_val == 'warning':
-            df_base = df_base[df_base['mcu_is_warning']]
+            # Modified: Show both expired and warning (<= 60 days)
+            df_base = df_base[df_base['mcu_is_warning'] | df_base['mcu_is_expired']]
         elif exp_val == 'expired':
             df_base = df_base[df_base['mcu_is_expired']]
 
